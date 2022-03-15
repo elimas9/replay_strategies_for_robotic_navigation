@@ -19,17 +19,17 @@ r.seed(3)
 # SET THE SIMULATION PARAMETERS
 save_new_data_file_results = False  # to save new .json file with the results
 saving_folder = '.'  # path to save the figures
-deterministic_world = False  # True if you want a deterministic environment, False for a stochastic one, as computed in
+deterministic_world = True  # True if you want a deterministic environment, False for a stochastic one, as computed in
 # Gazebo
 learning = True  # True if you want to perform the learning phase
-test_alpha = False  # True if you want to test the learning performance of the algorithms for different values of alpha
+test_alpha = True  # True if you want to test the learning performance of the algorithms for different values of alpha
 beta = 15.
 alpha = 0.78
 epsilon = 0.5
 gamma = 0.9
 reward_state = [22, 4]
 starting_point = 35
-mem_size_rep_1_3 = 90  # length of replayed sequences
+mem_size_rep = 90  # length of replayed sequences
 n_repr_repl = 20  # how many sequences or transitions are replayed for offline learning phase
 n_trials = 50
 n_individuals = 100
@@ -67,7 +67,7 @@ Trans_matrix, forbidden_state_action = define_transitions_matrix(Trans_matrix, l
 # define the transitions matrix (deterministic world is a boolean to set the properties of the environment)
 
 # organised all the parameters in a dictionary
-params_sims = {'alpha': alpha, 'n_trials': n_trials, 'mem_size_rep_1_3': mem_size_rep_1_3, 'n_repr_repl': n_repr_repl,
+params_sims = {'alpha': alpha, 'n_trials': n_trials, 'mem_size_rep': mem_size_rep, 'n_repr_repl': n_repr_repl,
                'starting_point': starting_point, 'beta': beta, 'gamma': gamma, 'alpha': alpha,
                'len_tMatrix': len_tMatrix, 'epsilon': epsilon, 'reward_state': reward_state,
                'forbidden_state_action': forbidden_state_action, 'Trans_matrix': Trans_matrix}

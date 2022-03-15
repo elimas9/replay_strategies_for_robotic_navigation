@@ -58,7 +58,15 @@ label_repl = ['MF-RL no replay', 'MF-RL backward replay', 'MF-RL shuffled replay
 
 
 def plot_line(data, label, color, ax=None):
-    # plot first, median and third quartile of the results
+    """
+    Plot first, median and third quartile of the results
+
+    :param data: 2D list with the data to plot the line
+    :param label: string defining the name or the line for the legend in the plot
+    :param color: string defining the color of the line in the plot
+    :param ax: matplotlib.pyplot.subplots axes for the plot
+    """
+
     alpha = [d[2] for d in data]
     v = [d[0][1] for d in data]
     vstdmin = [d[0][0] for d in data]

@@ -6,7 +6,14 @@ import json
 import copy
 
 
-def split_function(string, sep):  # split function in python didn't work on my computer
+def split_function(string, sep):
+    """
+    Split the elements of the lines of the .txt file containing the transitions
+
+    :param string: string (line)
+    :param sep: string with the criterion for splitting
+    :return: list with the separated elements of the line
+    """
     n = len(string)
     l = []
     i = 0
@@ -126,14 +133,29 @@ def define_transitions_matrix(tMatrix, len_tMatrix, deterministic_world):
     return tMatrix, forbidden_state_action
 
 
-def proba(s, a, Q, params):  # softmax function
+def proba(s, a, Q, params):
+    """
+    Softmax function
+
+    :param s: int --> state
+    :param a: int --> action
+    :param Q: 2D list of Q-values
+    :param params: dictionary of the parameters for the simulation
+    :return: float with the probability to take action a in state s
+    """
     somme = 0.0
     for i in range(8):
         somme = somme + np.exp(params['beta'] * Q[s][i])
     return (np.exp(params['beta'] * Q[s][a])) / somme
 
 
-def choose_random(L):  # similar to np.random.choice, will choose the index of L based on the proabilities stored in L.
+def choose_random(L):
+    """
+    Similar to np.random.choice, will choose the index of L based on the proabilities stored in L.
+
+    :param L: list of all possible actions with their probabilities and other information
+    :return: int corresponding to the index of the selected action
+    """
     # L has a length of 8 (8 possible actions)
     rand = r.random()
     c = 0.0
@@ -148,8 +170,14 @@ def choose_random(L):  # similar to np.random.choice, will choose the index of L
         return k
 
 
-def choose_another_action(forbidden_actions, L):  # if there are forbidden actions (stored in "forbidden_state_action"),
-    # the code will use this function
+def choose_another_action(forbidden_actions, L):
+    """
+    Choose another action if the previous one was forbidden.
+
+    :param forbidden_actions: numpy array containing the forbidden states
+    :param L: list of probabilities and other information of the 8 neighbour actions from the current state
+    :return: the new chose action from L
+    """
     kmax = 10
     k = 0
     chosen_action = choose_random(L)
@@ -172,7 +200,7 @@ def replay1(L_global, Q, params):
         :return: Updated Q-value matrix (numpy array)
     '''
     l = len(L_global)
-    n = min(l, params['mem_size_rep_1_3'])  # in case the memory is shorter than the length of replayed sequences
+    n = min(l, params['mem_size_rep'])  # in case the memory is shorter than the length of replayed sequences
     for k in range(params['n_repr_repl']):
         for i in range(n):
             current_state, a, next_state, reward = L_global[-(i + 1)]
@@ -182,12 +210,17 @@ def replay1(L_global, Q, params):
     return Q
 
 
-def replay3(L_global, Q, params):  # L_global is the list storing all the transitions
-    # (curent_state,action,next_state,reward)
-    # since the beginning of the simulation, global Q #Q i always defined globally before unching a simulation.
-    # Could do otherwise but it works fine
+def replay2(L_global, Q, params):
+    """
+    MF shuffled replay
+
+    :param L_global: list storing all the transitions
+    :param Q: 2D list of Q-values
+    :param params: dictionary of the parameters for the simulation
+    :return: 2D list of Q-values
+    """
     l = len(L_global)
-    n = min(l, params['mem_size_rep_1_3'])  # in case the memory is shorter than the length of replayed sequences
+    n = min(l, params['mem_size_rep'])  # in case the memory is shorter than the length of replayed sequences
     for k in range(params['n_repr_repl']):
         id_repl_states = r.sample(list(range(0, n)), n)
         for i in id_repl_states:
@@ -199,6 +232,16 @@ def replay3(L_global, Q, params):  # L_global is the list storing all the transi
 
 
 def trial_Q_learning(params, reward_state, type_of_replay, L_global, Q):
+    """
+    Run a single learning trial
+
+    :param params: dictionary of the parameters for the simulation
+    :param reward_state: int defining the number of the rewarding state
+    :param type_of_replay: int defining the type of replay (1 backward and 2 shuffled)
+    :param L_global: list storing all the transitions
+    :param Q: 2D list of Q-values
+    :return: Q, list of transitions, number of actions
+    """
     L = []  # stores the memory of the trial (transitions)
     current_state = params['starting_point']
     count_actions = 0  # count the nb of actions taken in the trial
@@ -219,14 +262,21 @@ def trial_Q_learning(params, reward_state, type_of_replay, L_global, Q):
         current_state = next_state
     if type_of_replay == 1:
         Q = replay1(L_global + L, Q, params)
-    if type_of_replay == 3:
-        Q = replay3(L_global + L, Q, params)
+    if type_of_replay == 2:
+        Q = replay2(L_global + L, Q, params)
     return Q, L, count_actions
 
 
 def run_sim(params, type_of_replay, n_actions, Q=None):
     """
-    Run a simulation
+    Run a whole simulation for an individual
+
+    :param params: dictionary of the parameters for the simulation
+    :param type_of_replay:  int defining the type of replay (1 backward and 2 shuffled)
+    :param n_actions: list with the number of actions taken to get to the reward, per trial
+    :param Q: 2D list of Q-values
+    :return: tuple of Q-values at trial 3-5-20, list storing all the transitions, list storing the number of actions
+    taken to get to the reward for each trial of the individual
     """
     if Q is None:
         Q = np.array([[0.0 for j in range(8)] for i in range(params['len_tMatrix'])])
@@ -260,6 +310,17 @@ def run_sim(params, type_of_replay, n_actions, Q=None):
 
 
 def cv_criterion(series, perc, window):
+    """
+    Compute learning convergence.
+
+    :param series: numpy array containing the number of actions to get to the reward for each trial of the individual
+    :param perc: float indicating the percentage of Q-values to be considered to compute the convergence
+    :param window: int indicating how many trials to consider for convergence
+    :return: a numpy array with the trial index of convergence, the number of actions in that trial and the cumulative
+    number of actions until that trial
+    else:
+    """
+
     b = False
     n = len(series)
     k = 0
@@ -277,14 +338,15 @@ def cv_criterion(series, perc, window):
     if k != (n - 1):
         a = series[k]
         b = np.sum(series[0:k + 1])
-        return np.array([k, a, b])  # k : trial index, a: nb of actions in trial, b : cumulative nb of actions
+        return np.array([k, a, b])
     else:
         return np.array([None, None, None])
 
-plt.show()
-
 
 class NpEncoder(json.JSONEncoder):
+    """
+    Class used to open .json file
+    """
     def default(self, obj):
         if isinstance(obj, np.integer):
             return int(obj)
