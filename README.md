@@ -8,7 +8,7 @@ learning performances of the analyzed replay techniques are tested here in two m
 - A stochastic version of the task, where performing action *a* in state *s* is associated to non-null probabilities of
   arrival for more than one state.
   
-> This code (tag MassiEtAl2022) goes with the following submission: Massi et al. (2022) Model-based and model-free
+> This code goes with the following submission: Massi et al. (2022) Model-based and model-free
 > replay mechanisms for reinforcement learning in neurorobotics. Submitted.
 
 ## Usage
