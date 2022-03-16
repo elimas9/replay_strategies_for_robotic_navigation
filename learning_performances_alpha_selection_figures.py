@@ -2,6 +2,7 @@ import matplotlib_latex_bridge as mlb
 import matplotlib.pyplot as plt
 import json
 import numpy as np
+import sys
 
 # set-up figures parameters
 mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11)
@@ -11,7 +12,6 @@ n_individuals = 100
 alpha = 0.78
 len_exp_beg = 0  # first iteration to be considered for the plot
 len_exp_end = 50  # last iteration to be considered for the plot
-type_repl = ['0', '1', '3']
 label_repl = ['MF-RL\nno replay', 'MF-RL\nbackward replay', 'MF-RL\nshuffled replay']
 color_repl = ['blue', 'orange', 'green']
 data_dict_repl = ['no replay', 'backward replay', 'random replay']
@@ -31,7 +31,7 @@ for idx, wo in enumerate(deterministic_world):
 
     ax = axs[idx]
 
-    for idy, tr in enumerate(type_repl):
+    for idy, tr in enumerate(res_learning['stat'].keys()):
         # plot first, median and third quartile of the results
         ax.plot(np.arange(len_exp_beg, len_exp_end), res_learning['stat'][tr][1][len_exp_beg:len_exp_end],
         c=color_repl[idy], label=label_repl[idy])
