@@ -23,6 +23,14 @@ learning performances of the analyzed replay techniques are tested here in two m
 - `qvalue_map_subplots.py` produces the plot concerning the propagation of the maximal Q-values in the maze (for
   individual 50 and trial 3), for all the types of replay and for both the deterministic and stochastic environment (to
   be selected at the beginning of the file). The .json file generated from `main.py` is needed.
+- `histogram_qvalues_propagation.py` produces the histograms plot concerning the propagation of the maximal Q-values
+  in the maze as a function of the distane to the rewarding state (for individual 50 and trial 3), for all the types
+  of replay and for both the deterministic and stochastic environment. The .json file generated from `main.py` is
+  needed.
+- `entropy_map.py` produces a figure representing the maximal entropy for each state of the environment, in the
+  stochastic case. The transitions are read from `transitions.txt`, collected after a long random exploration in ROS
+  Gazebo. The range to which the entropy values are normalized is the same used for visualizing the entropy map of the
+  other experiment in the paper (Sect. 4).
 - the **data_files** folder contains the all the files generated from the ROS Gazebo experiments which are needed to run
 the simulations here, and it is also the destination folder when the .json files with the results are saved.
   
