@@ -2,6 +2,8 @@ import matplotlib_latex_bridge as mlb
 import matplotlib.pyplot as plt
 import json
 import numpy as np
+import pandas as pd
+from bioinfokit.analys import stat
 import sys
 
 # set-up figures parameters
@@ -28,6 +30,20 @@ for idx, wo in enumerate(deterministic_world):
     # reading json file for the performances
     with open(f'data_files/results_det{wo}_ind{n_individuals}_alpha{alpha}_NEWalpha.json', 'rb') as rr:
         res_learning = json.load(rr)
+
+    # build a DataFrame to perform statistical analysis
+    act2rew = []
+    rt = []
+    for trep in res_learning['stat'].keys():
+        act2rew = act2rew + res_learning['stat'][trep][1]
+        rt = rt + [trep] * len(res_learning['stat'][trep][1])
+
+    df_learn_perf = pd.DataFrame({'act2rew': act2rew, 'rt': rt})
+
+    # one-way ANOVA
+    res_stat_learn_perf = stat()
+    res_stat_learn_perf.anova_stat(df=df_learn_perf, res_var='act2rew', anova_model='act2rew~ C(rt)')
+    print(res_stat_learn_perf.anova_summary)
 
     ax = axs[idx]
 

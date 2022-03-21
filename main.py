@@ -17,11 +17,12 @@ r.seed(3)
 
 # **************************************************************************** #
 # SET THE SIMULATION PARAMETERS
-save_new_data_file_results = False  # to save new .json file with the results
+save_new_data_file_results = False  # to save new .json file with the statistics of the results
+save_new_data_file_results_all_individuals = True  # to save new .json file with the results regurding all individuals
 saving_folder = '.'  # path to save the figures
 deterministic_world = True  # True if you want a deterministic environment, False for a stochastic one, as computed in
 # Gazebo
-learning = True  # True if you want to perform the learning phase
+learning = False  # True if you want to perform the learning phase
 test_alpha = True  # True if you want to test the learning performance of the algorithms for different values of alpha
 beta = 15.
 alpha = 0.78
@@ -127,16 +128,23 @@ if learning:
                   json.dump({'mean': mean_act_along_trial, 'std': std_act_along_trial, 'stat': stat_act_along_trial}, rr,
                             cls=NpEncoder)
 
+    if save_new_data_file_results_all_individuals:
+        with open(f'data_files/all_results_det{deterministic_world}_ind{n_individuals}_alpha{alpha}.json', 'w') as ar:
+            json.dump(all_ind_n_actions, ar, cls=NpEncoder)
+
+
 if test_alpha:
     alpha_ = np.linspace(0, 1, 10)
     mean_nb_actions_ = {}
     std_mean_nb_actions_ = {}
     stat_nb_actions_ = {}
+    all_nb_actions = {}
 
     for replay in range(0, len(replay_types)):
         mean_nb_actions_[replay_types[replay]] = []
         std_mean_nb_actions_[replay_types[replay]] = []
         stat_nb_actions_[replay_types[replay]] = []
+        all_nb_actions[replay_types[replay]] = []
         print('replay '+str(replay))
 
         for k in range(len(alpha_)):
@@ -156,7 +164,12 @@ if test_alpha:
             std_mean_nb_actions_[replay_types[replay]].append((np.std(mean_actions), replay_types[replay], alpha))
             stat_nb_actions_[replay_types[replay]].append((np.percentile(mean_actions, [25, 50, 75], axis=0),
                                                            replay_types[replay], alpha))
+            all_nb_actions[replay_types[replay]].append((mean_actions, replay_types[replay], alpha))
 
     if save_new_data_file_results:
         with open(f'data_files/perf_alpha_ind{n_individuals}_det{deterministic_world}_NEW.json', 'w') as naa:
             json.dump({'mean': mean_nb_actions_, 'std': std_mean_nb_actions_, 'stat': stat_nb_actions_}, naa, cls=NpEncoder)
+
+    if save_new_data_file_results_all_individuals:
+        with open(f'data_files/all_perf_alpha_ind{n_individuals}_det{deterministic_world}_NEW.json', 'w') as anaa:
+            json.dump(all_nb_actions, anaa, cls=NpEncoder)
