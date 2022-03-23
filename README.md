@@ -20,6 +20,9 @@ learning performances of the analyzed replay techniques are tested here in two m
 - `learning_performances_alpha_selection_figures.py` produces the plot concerning the learning phase for all the types
   of replay and for both the deterministic and stochastic environment, starting from the .json file generate from 
   main.py`.
+- `analyse_statistic.py` performs an analysis of the statistical significance of the learning perfomances of the tested
+  algorithms, saves these results in a .json file and plots them in a way that they can be added to the first figure
+  obtained in `learning_performances_alpha_selection_figures.py`.
 - `qvalue_map_subplots.py` produces the plot concerning the propagation of the maximal Q-values in the maze (for
   individual 50 and trial 3), for all the types of replay and for both the deterministic and stochastic environment (to
   be selected at the beginning of the file). The .json file generated from `main.py` is needed.

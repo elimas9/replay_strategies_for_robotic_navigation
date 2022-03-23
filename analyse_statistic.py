@@ -13,7 +13,8 @@ mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11, usetex=False
 def main():
     # *** to be set based on the desired plot *** #
     all_plots_stats_tables = False  # global plot of the significancy of the different results
-    legend = True  # activate p-values legend for the plot above
+    legend = False  # activate p-values legend for the plot above
+    x_axis = True  # activate x axis for the plot above
     save_sign_pvalues = False  # save .json file with the statistical results
     plot_overall_statistics = True  # plot all the confusion matrices (not so useful atm)
 
@@ -146,7 +147,13 @@ def main():
                 plt.legend(custom_lines, ['p-value < 0.001', 'p-value < 0.01', 'p-value < 0.05'], framealpha=1)
                 # plt.legend(custom_lines, ['***', '**', '*'], framealpha=1)
 
-            ax.axis("off")
+            if x_axis:
+                ax.axes.get_yaxis().set_visible(False)
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                ax.spines['left'].set_visible(False)
+            else:
+                ax.axis("off")
 
     plt.show()
 
