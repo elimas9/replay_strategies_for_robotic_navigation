@@ -2,6 +2,7 @@ import matplotlib_latex_bridge as mlb
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+import scipy.stats as stats
 import operator
 
 mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11)
@@ -11,13 +12,18 @@ def main():
     # *** to be set based on the desired plot *** #
     plot_qv2dist = False  # histograms of normalized maximum q-values wrt to the distance to the rewarding state
     plot_qv_ord = False  # histograms of normalized maximum q-values ordered in increasing order
-    plot_qvalues_bin = True  # bin distribution ofthe normalized maximum q-values
-    n_bins = 10
+    plot_qvalues_bin = False  # bin distribution ofthe normalized maximum q-values
+    plot_all_ind_qvalues_bin = True  # bin distribution ofthe normalized maximum q-values (ALL INDIVIDUALS)
+    n_bins = 10  # number of bins for the histograms and cdf
+    cdf = True  # select to plot the cdf
+    print_stat_world = True  # print the statistics about the difference types of replay wrt to the environemnt
+    print_stat_repl = False  # print the statistics about the difference types of replay in the same environemnt
 
     deterministic_world = [True, False]
 
     # set the relay types and their color
     label_repl = ['no replay', 'backward replay', 'shuffled replay']
+    label_repl_old = ['no replay', 'backward replay', 'random replay']
     color_repl = ['blue', 'orange', 'green']
 
     states_ = [(0.00320002, 0.0059351), (0.310727, 0.0241474), (0.593997, 0.152759), (0.724483, -0.118826),
@@ -33,85 +39,188 @@ def main():
     fig = mlb.figure_textwidth(widthp=1, height=3)
     axs = fig.subplots(2, 3)
 
-    for idx, det_world in enumerate(deterministic_world):
+    # analysis and histograms for all the individuals
+    if plot_all_ind_qvalues_bin:
+        data_stat_det_world = {}
+        data_stat_NOdet_world = {}
 
-        # open the .json files with the results
-        with open(f"data_files/q_values_det{det_world}_ind100_alpha0.78_trial_3_ind_50.json", "rb") as qvs:
-            q_values_det_sing = json.load(qvs)
+        for idx, det_world in enumerate(deterministic_world):  # environment
+            # open the .json files with the results
+            with open(f"data_files/all_ind_q_valuesdet{det_world}_ind100_alpha0.78.json", "rb") as qvs_a:
+                all_q_values_det_sing = json.load(qvs_a)
 
-        max_q_value = {}
-        dist_reward = {}
-        ord_states2rew = {}
-        norm_max_qvalues = {}
-        ord_qvalues2dist = {}
-        all_by_label = {}
-        ord_states2Qv = {}
-        hist_qvalues = {}
+            max_q_value = {}
+            hist_qvalues = {}
+            sum_hist_qvalues = {}
+            hist_sum_qvalues = {}
+            all_by_label = {}
 
-        for idy, tre in enumerate(q_values_det_sing.keys()):  # replay types
-            ax = axs[idx, idy]
+            for idy, tre in enumerate(all_q_values_det_sing.keys()):  # replay types
+                ax = axs[idx, idy]
 
-            max_q_value[tre] = {}
-            dist_reward[tre] = {}
-            ord_states2rew[tre] = {}
-            norm_max_qvalues[tre] = {}
-            ord_states2Qv[tre] = {}
-            for st in range(len(q_values_det_sing[tre])):  # states
-                # compute the max q-values for each state
-                # compute the state distance to the reward state
-                if st != 22:  # reward state not considered
-                    max_q_value[tre][str(st)] = max(q_values_det_sing[tre][st])
-                    dist_reward[tre][str(st)] = np.linalg.norm(np.array(states_[22]) - np.array(states_[st]))
+                max_q_value[tre] = {}
+                hist_qvalues[tre] = {}
+                sum_hist_qvalues[tre] = {}
 
-            # Normalize the max Q-value for each state
-            min_all_max_qvalues = min(max_q_value[tre].values())
-            max_all_max_qvalues = max(max_q_value[tre].values())
-            for st in range(len(q_values_det_sing[tre])):  # states
-                if st != 22:  # reward state not considered
-                    norm_max_qvalues[tre][str(st)] = (1 - 0) / (max_all_max_qvalues - min_all_max_qvalues) *\
-                                                     (max_q_value[tre][str(st)] - max_all_max_qvalues) + 1
+                for id_ind in range(len(all_q_values_det_sing[tre])):  # individual
+                    max_q_value[tre][str(id_ind + 1)] = {}
 
-            if plot_qv2dist:
-                # order the states in increasing order (per distance to the reward state)
-                ord_states2rew[tre] = dict(sorted(dist_reward[tre].items(), key=operator.itemgetter(1)))
-                ord_qvalues2dist[tre] = {k: norm_max_qvalues[tre][k] for k in ord_states2rew[tre].keys()}
+                    for st in range(len(all_q_values_det_sing[tre][id_ind])):  # states
+                        # compute the max q-values for each state
+                        max_q_value[tre][str(id_ind + 1)][str(st)] =\
+                            max(all_q_values_det_sing[tre][id_ind][st])
 
-                # plot histogram of q-values as a function of the distance to the reward position
-                ax.bar(np.arange(0, len(ord_states2rew[tre])), ord_qvalues2dist[tre].values(), color=color_repl[idy],
-                       label=label_repl[idy])
+                # sum the max q-values for each state for each individuals
+                sum_hist_qvalues[tre] = []
+                for sttt in max_q_value[tre].keys():
+                    sum_hist_qvalues[tre].append(np.sum(list(max_q_value[tre][sttt].values())))
 
-            if plot_qv_ord:
-                # order the states in increasing order of Q-values
-                ord_states2Qv[tre] = dict(sorted(norm_max_qvalues[tre].items(), key=operator.itemgetter(1)))
+                # define the histogram of the sum of the max Q-values along the individual
+                hist_sum_qvalues[tre] = np.histogram(sum_hist_qvalues[tre], bins=n_bins)
 
-                # plot histogram of Q-values in an increasing order
-                ax.bar(np.arange(0, len(ord_states2Qv[tre])), ord_states2Qv[tre].values(), color=color_repl[idy],
-                       label=label_repl[idy])
+                if not cdf:
+                    # plot histogram of Q-values divided in bins
+                    ax.bar(np.arange(0, len(hist_sum_qvalues[tre][0])), hist_sum_qvalues[tre][0], color=color_repl[idy],
+                           label=label_repl[idy])
+                else:
+                    # plot the cumulative histogram of the Q-values
+                    ax.hist(hist_sum_qvalues[tre][0], n_bins, density=True, histtype='step', cumulative=True,
+                            color=color_repl[idy], label=label_repl[idy])
 
-            if plot_qvalues_bin:
-                # define an histogram of the Q-values
-                hist_qvalues[tre] = np.histogram(list(norm_max_qvalues[tre].values()), bins=n_bins)
+                # set the same limits for the y-axis
+                plt.setp(ax, ylim=axs[0, 0].get_ylim())
 
-                # plot histogram of Q-values in an increasing order
-                ax.bar(np.arange(0, len(hist_qvalues[tre][0])), hist_qvalues[tre][0], color=color_repl[idy],
-                       label=label_repl[idy])
+                # set the labels
+                handles, labels = ax.get_legend_handles_labels()
+                by_label = dict(zip(labels, handles))
+                all_by_label.update(by_label)
 
-            if plot_qv2dist:
-                ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-            handles, labels = ax.get_legend_handles_labels()
-            by_label = dict(zip(labels, handles))
-            all_by_label.update(by_label)
+            if print_stat_repl:
+                print(f'**** DETERMINISTIC {det_world} ****')
 
-        if plot_qv2dist:
-            fig.supxlabel('distance to the rewarding state')
-        if plot_qv_ord:
-            fig.supxlabel('states ordered by increasing normalized maximum Q-value')
-        if plot_qvalues_bin:
-            fig.supxlabel('normalized maximum Q-value distribution bins')
+            for ttr in label_repl_old:  # replay
+                if det_world is True:
+                    data_stat_det_world[ttr] = sum_hist_qvalues[ttr]
+                else:
+                    data_stat_NOdet_world[ttr] = sum_hist_qvalues[ttr]
 
+                for ttr2 in label_repl_old:  # replay
+                    # compute the Two-sample Kolmogorov–Smirnov test for the different types of replay
+                    st, p_val = stats.ks_2samp(sum_hist_qvalues[ttr], sum_hist_qvalues[ttr2])
+                    # print the results
+                    if print_stat_repl:
+                        print(f'{ttr} vs {ttr2}')
+                        print(f'STAT {st}')
+                        print(f'P-VALUE {p_val}')
+
+        if print_stat_world:
+            for ttr in label_repl_old:  # replay
+                print(f"REPLAY: {ttr}")
+                # compute the Two-sample Kolmogorov–Smirnov test between the stochastic and the deterministic
+                # environment
+                st, p_val = stats.ks_2samp(data_stat_det_world[ttr], data_stat_NOdet_world[ttr2])
+                # print the results
+                print(f'STAT {st}')
+                print(f'P-VALUE {p_val}')
+
+        # title
+        fig.supxlabel('normalized maximum Q-value distribution bins')
         fig.supylabel('normalized maximum Q-value\nin each state (a.u.)')
 
+        # legend
         axs[0, 0].legend(all_by_label.values(), all_by_label.keys())
+
+    # analysis and histograms for individual 50
+    else:
+        for idx, det_world in enumerate(deterministic_world):
+
+            # open the .json files with the results
+            with open(f"data_files/q_values_det{det_world}_ind100_alpha0.78_trial_3_ind_50.json", "rb") as qvs:
+                q_values_det_sing = json.load(qvs)
+
+            max_q_value = {}
+            dist_reward = {}
+            ord_states2rew = {}
+            norm_max_qvalues = {}
+            ord_qvalues2dist = {}
+            all_by_label = {}
+            ord_states2Qv = {}
+            hist_qvalues = {}
+
+            for idy, tre in enumerate(q_values_det_sing.keys()):  # replay types
+                ax = axs[idx, idy]
+
+                max_q_value[tre] = {}
+                dist_reward[tre] = {}
+                ord_states2rew[tre] = {}
+                norm_max_qvalues[tre] = {}
+                ord_states2Qv[tre] = {}
+                for st in range(len(q_values_det_sing[tre])):  # states
+                    # compute the max q-values for each state
+                    # compute the state distance to the reward state
+                    if st != 22:  # reward state not considered
+                        max_q_value[tre][str(st)] = max(q_values_det_sing[tre][st])
+                        dist_reward[tre][str(st)] = np.linalg.norm(np.array(states_[22]) - np.array(states_[st]))
+
+                # Normalize the max Q-value for each state
+                min_all_max_qvalues = min(max_q_value[tre].values())
+                max_all_max_qvalues = max(max_q_value[tre].values())
+                for st in range(len(q_values_det_sing[tre])):  # states
+                    if st != 22:  # reward state not considered
+                        norm_max_qvalues[tre][str(st)] = (1 - 0) / (max_all_max_qvalues - min_all_max_qvalues) *\
+                                                         (max_q_value[tre][str(st)] - max_all_max_qvalues) + 1
+
+                if plot_qv2dist:
+                    # order the states in increasing order (per distance to the reward state)
+                    ord_states2rew[tre] = dict(sorted(dist_reward[tre].items(), key=operator.itemgetter(1)))
+                    ord_qvalues2dist[tre] = {k: norm_max_qvalues[tre][k] for k in ord_states2rew[tre].keys()}
+
+                    # plot histogram of q-values as a function of the distance to the reward position
+                    ax.bar(np.arange(0, len(ord_states2rew[tre])), ord_qvalues2dist[tre].values(), color=color_repl[idy],
+                           label=label_repl[idy])
+
+                if plot_qv_ord:
+                    # order the states in increasing order of Q-values
+                    ord_states2Qv[tre] = dict(sorted(norm_max_qvalues[tre].items(), key=operator.itemgetter(1)))
+
+                    # plot histogram of Q-values in an increasing order
+                    ax.bar(np.arange(0, len(ord_states2Qv[tre])), ord_states2Qv[tre].values(), color=color_repl[idy],
+                           label=label_repl[idy])
+
+                if plot_qvalues_bin:
+                    # define an histogram of the Q-values
+                    hist_qvalues[tre] = np.histogram(list(norm_max_qvalues[tre].values()), bins=n_bins)
+
+                    if not cdf:
+                        # plot histogram of Q-values divided in bins
+                        ax.bar(np.arange(0, len(hist_qvalues[tre][0])), hist_qvalues[tre][0], color=color_repl[idy],
+                               label=label_repl[idy])
+                    else:
+                        # plot the cumulative histogram of the Q-values
+                        ax.hist(hist_qvalues[tre][0], n_bins, density=True, histtype='step', cumulative=True,
+                                color=color_repl[idy], label=label_repl[idy])
+
+                if plot_qv2dist:
+                    ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+
+                if plot_qvalues_bin:
+                    # set the same limits for the y-axis
+                    plt.setp(ax, ylim=axs[0, 0].get_ylim())
+
+                handles, labels = ax.get_legend_handles_labels()
+                by_label = dict(zip(labels, handles))
+                all_by_label.update(by_label)
+
+            if plot_qv2dist:
+                fig.supxlabel('distance to the rewarding state')
+            if plot_qv_ord:
+                fig.supxlabel('states ordered by increasing normalized maximum Q-value')
+            if plot_qvalues_bin:
+                fig.supxlabel('normalized maximum Q-value distribution bins')
+
+            fig.supylabel('normalized maximum Q-value\nin each state (a.u.)')
+
+            axs[0, 0].legend(all_by_label.values(), all_by_label.keys())
 
     plt.show()
 

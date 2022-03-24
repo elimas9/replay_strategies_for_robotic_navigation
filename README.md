@@ -26,9 +26,10 @@ learning performances of the analyzed replay techniques are tested here in two m
 - `qvalue_map_subplots.py` produces the plot concerning the propagation of the maximal Q-values in the maze (for
   individual 50 and trial 3), for all the types of replay and for both the deterministic and stochastic environment (to
   be selected at the beginning of the file). The .json file generated from `main.py` is needed.
-- `histogram_qvalues_propagation.py` produces the histograms plot concerning the propagation of the maximal Q-values
-  in the maze as a function of the distane to the rewarding state (for individual 50 and trial 3), for all the types
-  of replay and for both the deterministic and stochastic environment. The .json file generated from `main.py` is
+- `histogram_qvalues_propagation.py` produces the histograms plots and the statistical analysis concerning the
+  propagation of the maximal Q-values in the maze (for instance as a function of the distance to the rewarding state,
+  for individual 50 at trial 3, for all the indivuals at trial 3 and divided in bins), for all the types
+  of replay and for both the deterministic and the stochastic environment. The .json files generated from `main.py` are
   needed.
 - `entropy_map.py` produces a figure representing the maximal entropy for each state of the environment, in the
   stochastic case. The transitions are read from `transitions.txt`, collected after a long random exploration in ROS

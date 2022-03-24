@@ -12,14 +12,14 @@ mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11, usetex=False
 
 def main():
     # *** to be set based on the desired plot *** #
-    all_plots_stats_tables = False  # global plot of the significancy of the different results
+    all_plots_stats_tables = False  # plot all the confusion matrices (not so useful atm)
     legend = False  # activate p-values legend for the plot above
     x_axis = True  # activate x axis for the plot above
     save_sign_pvalues = False  # save .json file with the statistical results
-    plot_overall_statistics = True  # plot all the confusion matrices (not so useful atm)
+    plot_overall_statistics = True  # global plot of the significancy of the different results
 
     deterministic_world = [True, False]
-    types_replay = ['MF-RL no replay', 'MF-RL backward replay', 'MF-RL shaffled replay']
+    types_replay = ['MF-RL no replay', 'MF-RL backward replay', 'MF-RL shuffled replay']
 
     fig = mlb.figure_textwidth(widthp=1, height=1.5)
     axs = fig.subplots(1, 2)
@@ -44,7 +44,7 @@ def main():
                     elif rt == '1':
                         trial_ds_label.append('MF-RL backward replay')
                     else:
-                        trial_ds_label.append('MF-RL shaffled replay')
+                        trial_ds_label.append('MF-RL shuffled replay')
 
             trial_df = pd.DataFrame({'ind': trial_ds_data, 'replay_type': trial_ds_label})
 
@@ -82,8 +82,8 @@ def main():
 
         if plot_overall_statistics:
             colo = {}
-            all_colors = {'backward replay - shaffled replay': [], 'no replay - backward replay': [],
-                          'no replay - shaffled replay': []}
+            all_colors = {'backward replay - shuffled replay': [], 'no replay - backward replay': [],
+                          'no replay - shuffled replay': []}
 
             for tri in stat_sign.keys():  # trial
                 colo[tri] = {}
@@ -100,43 +100,43 @@ def main():
 
                 all_colors['no replay - backward replay'].append(colo[tri]['no replay - backward replay'])
 
-                # no replay vs shaffled replay
-                if stat_sign[tri]['MF-RL no replay']['MF-RL shaffled replay'] == "***":
-                    colo[tri]['no replay - shaffled replay'] = "purple"
-                elif stat_sign[tri]['MF-RL no replay']['MF-RL shaffled replay'] == "**":
-                    colo[tri]['no replay - shaffled replay'] = "red"
-                elif stat_sign[tri]['MF-RL no replay']['MF-RL shaffled replay'] == "*":
-                    colo[tri]['no replay - shaffled replay'] = "pink"
+                # no replay vs shuffled replay
+                if stat_sign[tri]['MF-RL no replay']['MF-RL shuffled replay'] == "***":
+                    colo[tri]['no replay - shuffled replay'] = "purple"
+                elif stat_sign[tri]['MF-RL no replay']['MF-RL shuffled replay'] == "**":
+                    colo[tri]['no replay - shuffled replay'] = "red"
+                elif stat_sign[tri]['MF-RL no replay']['MF-RL shuffled replay'] == "*":
+                    colo[tri]['no replay - shuffled replay'] = "pink"
                 else:
-                    colo[tri]['no replay - shaffled replay'] = "white"
+                    colo[tri]['no replay - shuffled replay'] = "white"
 
-                all_colors['no replay - shaffled replay'].append(colo[tri]['no replay - shaffled replay'])
+                all_colors['no replay - shuffled replay'].append(colo[tri]['no replay - shuffled replay'])
 
-                # backward replay vs shaffled replay
-                if stat_sign[tri]['MF-RL backward replay']['MF-RL shaffled replay'] == "***":
-                    colo[tri]['backward replay - shaffled replay'] = "purple"
-                elif stat_sign[tri]['MF-RL backward replay']['MF-RL shaffled replay'] == "**":
-                    colo[tri]['backward replay - shaffled replay'] = "red"
-                elif stat_sign[tri]['MF-RL backward replay']['MF-RL shaffled replay'] == "*":
-                    colo[tri]['backward replay - shaffled replay'] = "pink"
+                # backward replay vs shuffled replay
+                if stat_sign[tri]['MF-RL backward replay']['MF-RL shuffled replay'] == "***":
+                    colo[tri]['backward replay - shuffled replay'] = "purple"
+                elif stat_sign[tri]['MF-RL backward replay']['MF-RL shuffled replay'] == "**":
+                    colo[tri]['backward replay - shuffled replay'] = "red"
+                elif stat_sign[tri]['MF-RL backward replay']['MF-RL shuffled replay'] == "*":
+                    colo[tri]['backward replay - shuffled replay'] = "pink"
                 else:
-                    colo[tri]['backward replay - shaffled replay'] = "white"
+                    colo[tri]['backward replay - shuffled replay'] = "white"
 
-                all_colors['backward replay - shaffled replay'].append(colo[tri]['backward replay - shaffled replay'])
+                all_colors['backward replay - shuffled replay'].append(colo[tri]['backward replay - shuffled replay'])
 
-            # plot
+            # plot (make thicker lines)
             ax.scatter(np.arange(len(stat_sign)), [2] * len(stat_sign),
-                        c=all_colors['backward replay - shaffled replay'], marker='_',
-                       label='backward replay vs shaffled replay')
+                        c=all_colors['backward replay - shuffled replay'], marker='_',
+                       label='backward replay vs shuffled replay')
             ax.scatter(np.arange(len(stat_sign)), [4] * len(stat_sign),
-                        c=all_colors['no replay - shaffled replay'], marker='_', label='no replay vs shaffled replay')
+                        c=all_colors['no replay - shuffled replay'], marker='_', label='no replay vs shuffled replay')
             ax.scatter(np.arange(len(stat_sign)), [6] * len(stat_sign),
                         c=all_colors['no replay - backward replay'], marker='_', label='no replay vs backward replay')
 
             # adding labels
             if idx == 0:
-                ax.text(1, 2.5, 'backward replay vs shaffled replay')
-                ax.text(1, 4.5, 'no replay vs shaffled replay')
+                ax.text(1, 2.5, 'backward replay vs shuffled replay')
+                ax.text(1, 4.5, 'no replay vs shuffled replay')
                 ax.text(1, 6.5, 'no replay vs backward replay')
 
             # customized legend

@@ -18,12 +18,14 @@ r.seed(3)
 # **************************************************************************** #
 # SET THE SIMULATION PARAMETERS
 save_new_data_file_results = False  # to save new .json file with the statistics of the results
-save_new_data_file_results_all_individuals = True  # to save new .json file with the results regurding all individuals
+save_new_data_file_results_all_individuals = False  # to save new .json file with the results regarding all individuals
+save_all_ind_q_map_trial3 = True  # to save new .json files with the results regarding the q values at iterearion #3 for
+# all the individuals
 saving_folder = '.'  # path to save the figures
-deterministic_world = True  # True if you want a deterministic environment, False for a stochastic one, as computed in
+deterministic_world = False  # True if you want a deterministic environment, False for a stochastic one, as computed in
 # Gazebo
-learning = False  # True if you want to perform the learning phase
-test_alpha = True  # True if you want to test the learning performance of the algorithms for different values of alpha
+learning = True  # True if you want to perform the learning phase
+test_alpha = False  # True if you want to test the learning performance of the algorithms for different values of alpha
 beta = 15.
 alpha = 0.78
 epsilon = 0.5
@@ -34,7 +36,7 @@ mem_size_rep = 90  # length of replayed sequences
 n_repr_repl = 20  # how many sequences or transitions are replayed for offline learning phase
 n_trials = 50
 n_individuals = 100
-replay_types = ['no replay', 'backward replay', 'random replay']
+replay_types = ['no replay', 'backward replay', 'shuffled replay']
 possible_actions = 8
 # **************************************************************************** #
 
@@ -89,9 +91,11 @@ if learning:
     all_ind_n_actions = {}
     stat_act_along_trial = {}
     all_tr_q_map_trial = {}
+    all_ind_q_map_3trial = {}
 
     for replay in range(0, len(replay_types)):
         all_ind_n_actions[replay] = []
+        all_ind_q_map_3trial[replay_types[replay]] = []
 
         Q_[f'repl_{replay + 1}'] = {}
         for k in range(n_individuals):
@@ -110,27 +114,37 @@ if learning:
 
             all_ind_n_actions[replay].append(n_actions)
 
-            if k == (n_individuals/2) - 1:
+            if k == (n_individuals/2) - 1:  # save q-value propagation map for individual 25
                 q_map_3trial_50ind = copy.deepcopy(Q_saved[2])
+
+            # register q_values for all indivials, trial 3
+            all_ind_q_map_3trial[replay_types[replay]].append(copy.deepcopy(Q_saved[2]))
 
         mean_act_along_trial[replay] = np.mean(all_ind_n_actions[replay], axis=0)
         std_act_along_trial[replay] = np.std(all_ind_n_actions[replay], axis=0)
         stat_act_along_trial[replay] = np.percentile(all_ind_n_actions[replay], [25, 50, 75], axis=0)
 
-        # register q_values for indivial 50, trial 3
+        # register q_values for indivial 25, trial 3
         all_tr_q_map_trial[replay_types[replay]] = q_map_3trial_50ind
 
     if save_new_data_file_results:
-        with open(f'data_files/q_values_det{deterministic_world}_ind{n_individuals}_alpha{alpha}_trial_3_ind_50.json', 'w') as qv_ot:
+        with open(f'data_files/q_values_det{deterministic_world}_ind{n_individuals}_alpha{alpha}_trial_3_ind_50.json',
+                  'w') as qv_ot:
                   json.dump(all_tr_q_map_trial, qv_ot, cls=NpEncoder)
 
-        with open(f'data_files/results_det{deterministic_world}_ind{n_individuals}_alpha{alpha}_NEWalpha.json', 'w') as rr:
+        with open(f'data_files/results_det{deterministic_world}_ind{n_individuals}_alpha{alpha}_NEWalpha.json', 'w')\
+                as rr:
                   json.dump({'mean': mean_act_along_trial, 'std': std_act_along_trial, 'stat': stat_act_along_trial}, rr,
                             cls=NpEncoder)
 
     if save_new_data_file_results_all_individuals:
         with open(f'data_files/all_results_det{deterministic_world}_ind{n_individuals}_alpha{alpha}.json', 'w') as ar:
             json.dump(all_ind_n_actions, ar, cls=NpEncoder)
+
+    if save_all_ind_q_map_trial3:
+        with open(f'data_files/all_ind_q_valuesdet{deterministic_world}_ind{n_individuals}_alpha{alpha}.json', 'w')\
+                as aq:
+            json.dump(all_ind_q_map_3trial, aq, cls=NpEncoder)
 
 
 if test_alpha:
