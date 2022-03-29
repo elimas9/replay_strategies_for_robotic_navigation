@@ -279,7 +279,7 @@ def run_sim(params, type_of_replay, n_actions, Q=None):
     taken to get to the reward for each trial of the individual
     """
     if Q is None:
-        Q = np.array([[0.0 for j in range(8)] for i in range(params['len_tMatrix'])])
+        Q = np.zeros((params['len_tMatrix'], 8))
 
     # global Q
     L_global = []

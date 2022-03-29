@@ -10,14 +10,19 @@ mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11)
 
 def main():
     # *** to be set based on the desired plot *** #
+
+    # ---- JUST ONE OF THESE BELOW SHOULD BE TRUE PER SIMULATION ----
     plot_qv2dist = False  # histograms of normalized maximum q-values wrt to the distance to the rewarding state
     plot_qv_ord = False  # histograms of normalized maximum q-values ordered in increasing order
     plot_qvalues_bin = False  # bin distribution ofthe normalized maximum q-values
     plot_all_ind_qvalues_bin = True  # bin distribution ofthe normalized maximum q-values (ALL INDIVIDUALS)
+    # ---------------------------------------------------------------
+
     n_bins = 10  # number of bins for the histograms and cdf
-    cdf = True  # select to plot the cdf
+    cdf = False  # select to plot the cdf
     print_stat_world = True  # print the statistics about the difference types of replay wrt to the environemnt
-    print_stat_repl = False  # print the statistics about the difference types of replay in the same environemnt
+    print_stat_repl = True  # print the statistics about the difference types of replay in the same environemnt
+    compare2best_propagation = True
 
     deterministic_world = [True, False]
 
@@ -49,6 +54,8 @@ def main():
             with open(f"data_files/all_ind_q_valuesdet{det_world}_ind100_alpha0.78.json", "rb") as qvs_a:
                 all_q_values_det_sing = json.load(qvs_a)
 
+            print(f'** ENVIRONMENT DETERMINISTIC: {det_world} **')
+
             max_q_value = {}
             hist_qvalues = {}
             sum_hist_qvalues = {}
@@ -56,6 +63,8 @@ def main():
             all_by_label = {}
 
             for idy, tre in enumerate(all_q_values_det_sing.keys()):  # replay types
+                print(f'-----> replay type: {tre} -----')
+
                 ax = axs[idx, idy]
 
                 max_q_value[tre] = {}
@@ -74,6 +83,14 @@ def main():
                 sum_hist_qvalues[tre] = []
                 for sttt in max_q_value[tre].keys():
                     sum_hist_qvalues[tre].append(np.sum(list(max_q_value[tre][sttt].values())))
+
+                # compute earth mover’s distance to optimal q-values propagation:
+                if compare2best_propagation:
+                    with open(f"data_files/max_opt_qvalues_det{det_world}.json", "rb") as moqv:
+                        max_opt_qvalues = json.load(moqv)
+
+                    dist2opt = stats.wasserstein_distance(sum_hist_qvalues[tre], max_opt_qvalues)
+                    print(f'earth mover’s distance to optimal q-values propagation: {dist2opt}')
 
                 # define the histogram of the sum of the max Q-values along the individual
                 hist_sum_qvalues[tre] = np.histogram(sum_hist_qvalues[tre], bins=n_bins)
@@ -124,11 +141,12 @@ def main():
                 print(f'P-VALUE {p_val}')
 
         # title
-        fig.supxlabel('normalized maximum Q-value distribution bins')
-        fig.supylabel('normalized maximum Q-value\nin each state (a.u.)')
+        fig.supxlabel('maximum Q-value cumulative distribution (10 bins)')
+        fig.supylabel('sum (over all individuals)\nof maximum Q-value\nin each state (a.u.)')
 
         # legend
-        axs[0, 0].legend(all_by_label.values(), all_by_label.keys())
+        # axs[0, 0].legend(all_by_label.values(), all_by_label.keys())
+        axs[1, 0].legend(all_by_label.values(), all_by_label.keys(), loc='lower right')
 
     # analysis and histograms for individual 50
     else:
@@ -218,7 +236,7 @@ def main():
             if plot_qvalues_bin:
                 fig.supxlabel('normalized maximum Q-value distribution bins')
 
-            fig.supylabel('normalized maximum Q-value\nin each state (a.u.)')
+            fig.supylabel('maximum Q-value\nin each state (a.u.)')
 
             axs[0, 0].legend(all_by_label.values(), all_by_label.keys())
 

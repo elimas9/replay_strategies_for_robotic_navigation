@@ -4,7 +4,6 @@ import json
 import numpy as np
 import pandas as pd
 from bioinfokit.analys import stat
-import sys
 
 # set-up figures parameters
 mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11)

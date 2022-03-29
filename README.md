@@ -11,6 +11,10 @@ learning performances of the analyzed replay techniques are tested here in two m
 > This code goes with the following submission: Massi et al. (2022) Model-based and model-free
 > replay mechanisms for reinforcement learning in neurorobotics. Submitted.
 
+## Contributors
+- [Juliane Mailly](https://github.com/julianemailly) 
+- [Elisa Massi](https://github.com/elimas9) 
+
 ## Usage
 - `main.py` is used to run the whole simulation: analysis on the learning phase and evaluation over different values of
   learning rate *alpha*. There you can set all the parameters of your simulation and choose if you want to simulate the
@@ -29,8 +33,11 @@ learning performances of the analyzed replay techniques are tested here in two m
 - `histogram_qvalues_propagation.py` produces the histograms plots and the statistical analysis concerning the
   propagation of the maximal Q-values in the maze (for instance as a function of the distance to the rewarding state,
   for individual 50 at trial 3, for all the indivuals at trial 3 and divided in bins), for all the types
-  of replay and for both the deterministic and the stochastic environment. The .json files generated from `main.py` are
-  needed.
+  of replay and for both the deterministic and the stochastic environment. It compares also the maximal q-values
+  propagationo of each algorithm to the optimal one generated in `test_value_iteration_optimal_qvalue_propagation.py`.
+- `test_value_iteration_optimal_qvalue_propagation.py` computes and plots in different figures (map, histogram and
+  cumulative histogram) the maximal q-values propagation for the MB value-iteration algorithm employed in the proposed
+  environemnt, to be compared to the maximal q-values propagation obtained by the other tested algorithms 
 - `entropy_map.py` produces a figure representing the maximal entropy for each state of the environment, in the
   stochastic case. The transitions are read from `transitions.txt`, collected after a long random exploration in ROS
   Gazebo. The range to which the entropy values are normalized is the same used for visualizing the entropy map of the

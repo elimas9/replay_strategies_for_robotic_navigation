@@ -17,9 +17,9 @@ r.seed(3)
 
 # **************************************************************************** #
 # SET THE SIMULATION PARAMETERS
-save_new_data_file_results = False  # to save new .json file with the statistics of the results
+save_new_data_file_results = True  # to save new .json file with the statistics of the results
 save_new_data_file_results_all_individuals = False  # to save new .json file with the results regarding all individuals
-save_all_ind_q_map_trial3 = True  # to save new .json files with the results regarding the q values at iterearion #3 for
+save_all_ind_q_map_trial3 = False  # to save new .json files with the results regarding the q values at iterearion #3 for
 # all the individuals
 saving_folder = '.'  # path to save the figures
 deterministic_world = False  # True if you want a deterministic environment, False for a stochastic one, as computed in
